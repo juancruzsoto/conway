@@ -1,5 +1,6 @@
-.cellGrid{
-    top: 8rem;
-    left: 3rem;
-    position: absolute;
+.cellGrid {
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  position: absolute;
 }

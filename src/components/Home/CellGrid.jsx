@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CircleRoundedIcon from "@mui/icons-material/CircleRounded";
 import CircleTwoToneIcon from "@mui/icons-material/CircleTwoTone";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
@@ -6,22 +6,38 @@ import { Grid, IconButton } from "@mui/material";
 import "./css/cellGrid.css";
 
 const CellGrid = () => {
-  const putRow = () => {
+  const [cellsState, setCellsState] = useState({});
+  const [cellsInGridState, setCellsInGridState] = useState([]);
+
+  const handleChangeState = (x, i) => {
+    setCellsState({ ...cellsState, [`${x},${i}`]: true });
+    // let updatedState = cellsState;
+    // updatedState[`${x},${i}`] = !updatedState[`${x},${i}`];
+
+    // setCellsState(updatedState);
+  };
+
+  const putRow = (x, cells) => {
     let row = [];
-    for (let i = 1; i < 50; i++) {
+    for (let i = 0; i < 50; i++) {
+      cells[`${x},${i}`] = true;
       row.push(
         <IconButton
           aria-label=""
+          key={`${x},${i}`}
           component="span"
+          value={[x, i]}
           style={{
             color: "black",
-            // backgroundColor: "red",
+            backgroundColor: cellsState[`${x},${i}`] && "lightblue",
             padding: "0px",
-            marginTop: "7px",
-            marginRight: "17px",
+            marginTop: "5px",
+            marginRight: "11px",
           }}
+          onClick={() => handleChangeState(x, i)}
         >
-          <CircleOutlinedIcon style={{ fontSize: 20 }} />
+          {console.log("AAAAAAAAA", cellsState[`${x},${i}`])}
+          <CircleOutlinedIcon style={{ fontSize: 13 }} />
         </IconButton>
       );
     }
@@ -30,15 +46,24 @@ const CellGrid = () => {
 
   const putAllRows = () => {
     let rows = [];
+    let cells = {};
     for (let x = 0; x < 30; x++) {
       rows.push(
         <Grid item xs={12}>
-          {putRow()}
+          {putRow(x, cells)}
         </Grid>
       );
     }
-    return rows;
+    console.log(cells);
+
+    return { cells, rows };
   };
+
+  useEffect(() => {
+    let { cells, rows } = putAllRows();
+    setCellsState(cells);
+    setCellsInGridState(rows);
+  }, []);
 
   return (
     <div className="cellGrid">
@@ -54,7 +79,7 @@ const CellGrid = () => {
         justifyContent="flex-start"
         alignItems="center"
       >
-        {putAllRows()}
+        {cellsInGridState}
       </Grid>
     </div>
   );

@@ -1,5 +1,9 @@
 .header {
-  top: 2rem;
-  left: 3rem;
+  top: 1rem;
+  left: 2rem;
   position: absolute;
+}
+
+.generacion {
+  color: red;
 }
