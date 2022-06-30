@@ -3,7 +3,13 @@ import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import { Grid, IconButton } from "@mui/material";
 import "./css/cellGrid.css";
 import { useDispatch } from "react-redux";
-import { addCell, removeCell } from "../../store/cellSlice";
+import {
+  addCell,
+  addNeighbors,
+  addNeighborsByCell,
+  removeCell,
+  removeNeighbors,
+} from "../../store/cellSlice";
 
 const CellGrid = () => {
   const dispatch = useDispatch();
@@ -19,14 +25,62 @@ const CellGrid = () => {
     });
   };
 
-  const handleChangeState = (x, i, state, setState) => {
+  const setNeighbors = (x, i, h, w) => {
+    let neighbors = [];
+    let row;
+    let row2;
+
+    if (x - 1 < 0) {
+      row = h - 1;
+      row2 = x + 1;
+    } else {
+      row = x - 1;
+      if (x + 1 === h) {
+        row2 = 0;
+      } else {
+        row2 = x + 1;
+      }
+    }
+
+    for (let column = i - 1; column < i + 2; column++) {
+      if (column < 0) {
+        neighbors.push(`${row},${w - 1}`);
+        neighbors.push(`${x},${w - 1}`);
+        neighbors.push(`${row2},${w - 1}`);
+      } else {
+        if (column === w) {
+          neighbors.push(`${row},${0}`);
+          neighbors.push(`${x},${0}`);
+          neighbors.push(`${row2},${0}`);
+        } else {
+          neighbors.push(`${row},${column}`);
+          neighbors.push(`${x},${column}`);
+          neighbors.push(`${row2},${column}`);
+        }
+      }
+    }
+    neighbors.splice(4, 1);
+    // neighbors.push(`${x},${i - 1}`);
+    // neighbors.push(`${x},${i + 1}`);
+    // for (let column = i - 1; column < i + 2; column++) {
+    //   neighbors.push(`${x + 1},${column}`);
+    // }
+
+    return neighbors;
+  };
+
+  const handleChangeState = (x, i, state, setState, h, w) => {
     // document.getElementById(`${0},${0}`).click();
     setState((currentState) => !currentState);
 
+    let neighbors = setNeighbors(x, i, h, w);
     if (state) {
       dispatch(removeCell(`${x},${i}`));
+      dispatch(removeNeighbors(neighbors));
     } else {
       dispatch(addCell(`${x},${i}`));
+      dispatch(addNeighborsByCell({ cell: `${x},${i}`, neighbors: neighbors }));
+      dispatch(addNeighbors(neighbors));
     }
   };
 
@@ -47,7 +101,9 @@ const CellGrid = () => {
           marginTop: "5px",
           marginRight: "11px",
         }}
-        onClick={() => handleChangeState(props.x, props.i, state, setState)}
+        onClick={() =>
+          handleChangeState(props.x, props.i, state, setState, props.h, props.w)
+        }
       >
         <CircleOutlinedIcon
           style={{
@@ -97,5 +153,6 @@ const CellGrid = () => {
     </div>
   );
 };
+
 
 export default CellGrid;
