@@ -27,7 +27,7 @@ const cellsSlice = createSlice({
       state.neighborsbycell[action.payload.cell] = action.payload.neighbors;
     },
     removeNeighbors: (state, action) => {
-      if (state.cells > 0) {
+      if (state.cells.length > 0) {
         action.payload.forEach((element) =>
           state.neighbors[element] - 1 > 0
             ? (state.neighbors[element] = state.neighbors[element] - 1)

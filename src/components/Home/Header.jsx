@@ -1,39 +1,67 @@
 import { Stack, Button, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  addCell,
-  addNeighbors,
-  removeCell,
-  removeNeighbors,
-} from "../../store/cellSlice";
+import React, { useEffect, useRef, useState } from "react";
+import {useSelector } from "react-redux";
+// import {
+//   addCell,
+//   addNeighbors,
+//   removeCell,
+//   removeNeighbors,
+// } from "../../store/cellSlice";
 import "./css/header.css";
 
 const Header = () => {
-  const dispatch = useDispatch();
   const state = useSelector((state) => state.cellsReducer);
+  const myTimer = useRef(null);
+  const [running, setRunning] = useState(false);
+  const [nroGeneration, setNroGeneration] = useState(0);
 
-  const nextGeneration = () => {
+  function nextGeneration() {
     console.log(state.cells);
     console.log(state.neighbors);
+    state.cells.forEach((c)=>{
+      if(!state.neighbors[c]){
+        document.getElementById(c).click();
+      }
+    })
     Object.keys(state.neighbors).forEach((nb) => {
       if (state.cells.includes(nb)) {
         if (state.neighbors[nb] !== 2 && state.neighbors[nb] !== 3) {
-          dispatch(removeCell(nb));
-          dispatch(removeNeighbors([nb, ...state.neighborsbycell[nb]]));
           document.getElementById(nb).click();
         }
       } else {
         if (state.neighbors[nb] === 3) {
           document.getElementById(nb).click();
-          dispatch(addCell(nb));
-          // dispatch(addNeighbors(state.neighborsbycell[nb]));
         }
       }
     });
+  }
+
+  const startGen = () => {
+    setRunning((state) => !state);
   };
 
-  useEffect(() => {}, [dispatch]);
+  const restart = () => {
+    setNroGeneration(0)
+    state.cells.forEach((c) => {
+      document.getElementById(c).click();
+    });
+
+  };
+
+  useEffect(() => {
+    function startGeneration() {
+      myTimer.current = setTimeout(() => {
+        nextGeneration();
+        setNroGeneration((state) => state + 1);
+      }, 1000);
+    }
+
+    if (running) {
+      startGeneration();
+    }
+
+    return () => clearTimeout(myTimer.current);
+  }, [nroGeneration, running]);
 
   return (
     <div className="header">
@@ -42,17 +70,29 @@ const Header = () => {
           size="small"
           style={{ fontSize: 10 }}
           variant="contained"
-          onClick={nextGeneration}
+          onClick={startGen}
         >
           Iniciar
         </Button>
-        <Button size="small" style={{ fontSize: 10 }} variant="contained">
+        <Button
+          size="small"
+          style={{ fontSize: 10 }}
+          variant="contained"
+          onClick={startGen}
+        >
           Detener
         </Button>
-        <Button size="small" style={{ fontSize: 10 }} variant="contained">
+        <Button
+          size="small"
+          style={{ fontSize: 10 }}
+          variant="contained"
+          onClick={restart}
+        >
           Reiniciar
         </Button>
-        <Typography className="generacion">Generacion #{"--"}</Typography>
+        <Typography className="generacion">
+          Generacion #{nroGeneration}
+        </Typography>
       </Stack>
     </div>
   );
