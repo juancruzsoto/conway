@@ -5,6 +5,7 @@ const initialState = {
   neighbors: {},
   neighborsbycell: {},
   cellGrid: [30, 50],
+  historicGeneration: [],
 };
 
 const cellsSlice = createSlice({
@@ -41,6 +42,14 @@ const cellsSlice = createSlice({
     setCellGrid: (state, action) => {
       state.cellGrid = action.payload;
     },
+    setHistoricGeneration: (state, action) => {
+      state.historicGeneration = [...state.historicGeneration, action.payload];
+    },
+    removeLastGeneration: (state) => {
+      let newHistoric = state.historicGeneration;
+      newHistoric.pop();
+      state.historicGeneration = newHistoric;
+    },
   },
 });
 
@@ -51,6 +60,8 @@ export const {
   removeNeighbors,
   addNeighborsByCell,
   setCellGrid,
+  setHistoricGeneration,
+  removeLastGeneration,
 } = cellsSlice.actions;
 
 export default cellsSlice.reducer;

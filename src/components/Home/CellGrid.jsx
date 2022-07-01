@@ -12,7 +12,7 @@ import {
 } from "../../store/cellSlice";
 import useDebounce from "../../utilities/useDebounce";
 
-const CellGrid = () => {
+const CellGrid = (props) => {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.cellsReducer);
   const debouncedGrid = useDebounce(state.cellGrid, 400);
@@ -21,8 +21,10 @@ const CellGrid = () => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const debouncedDimensions = useDebounce(dimensions, 300);
 
   const handleResize = () => {
+    props.setIsLoading(true);
     setDimensions({
       width: window.innerWidth,
       height: window.innerHeight,
@@ -98,7 +100,7 @@ const CellGrid = () => {
         component="span"
         style={{
           color: "black",
-          backgroundColor: state && "blue",
+          backgroundColor: state && "lightblue",
           padding: "0px",
           marginTop: "5px",
           marginRight: "11px",
@@ -122,19 +124,9 @@ const CellGrid = () => {
 
   const putAllRows = () => {
     let rows = [];
-    let h, w;
-    if (debouncedGrid[0] < 10) {
-      h = 10;
-      document.getElementById("row").value = 10;
-    } else {
-      h = debouncedGrid[0];
-    }
-    if (debouncedGrid[1] < 20) {
-      w = 20;
-      document.getElementById("column").value = 20;
-    } else {
-      w = debouncedGrid[1];
-    }
+    let h = debouncedGrid[0];
+    let w = debouncedGrid[1];
+
     for (let x = 0; x < h; x++) {
       let row = [];
       for (let i = 0; i < w; i++) {
@@ -149,13 +141,14 @@ const CellGrid = () => {
     return rows;
   };
 
-  // useEffect(() => {
-  //   window.addEventListener("resize", handleResize, false);
-  // }, []);
+  useEffect(() => {
+    window.addEventListener("resize", handleResize, false);
+  }, []);
 
   useEffect(() => {
     setCellsInGridState(putAllRows());
-  }, [debouncedGrid]);
+    props.setIsLoading(false);
+  }, [debouncedGrid, debouncedDimensions]);
 
   return (
     <div className="cellGrid">

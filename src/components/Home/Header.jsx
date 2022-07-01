@@ -5,20 +5,21 @@ import {
   TextField,
   InputAdornment,
   Autocomplete,
+  IconButton,
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setCellGrid } from "../../store/cellSlice";
+import {
+  removeLastGeneration,
+  setCellGrid,
+  setHistoricGeneration,
+} from "../../store/cellSlice";
 import useDebounce from "../../utilities/useDebounce";
-// import {
-//   addCell,
-//   addNeighbors,
-//   removeCell,
-//   removeNeighbors,
-// } from "../../store/cellSlice";
+import SkipPreviousRoundedIcon from "@mui/icons-material/SkipPreviousRounded";
+import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
 import "./css/header.css";
 
-const Header = () => {
+const Header = (props) => {
   const state = useSelector((state) => state.cellsReducer);
   const organismPatterns = [
     {
@@ -409,8 +410,10 @@ const Header = () => {
   const dispatch = useDispatch();
   const [running, setRunning] = useState(false);
   const [interval, setInterval] = useState(300);
+  const [grid, setGrid] = useState(null);
+  const debouncedGrid = useDebounce(grid, 400);
   const [nroGeneration, setNroGeneration] = useState(0);
-  const [organism, setOrganism] = useState("");
+  // const [organism, setOrganism] = useState("");
   const debouncedInterval = useDebounce(interval, 500);
 
   function nextGeneration() {
@@ -432,32 +435,35 @@ const Header = () => {
     });
   }
 
-  useEffect(() => {
+  const handleNextGeneration = () => {
+    dispatch(setHistoricGeneration(state.cells));
+    nextGeneration();
+    setNroGeneration((state) => state + 1);
+  };
+
+  const handlePreviousGeneration = async () => {
+    //remove current generation
+    await state.cells.forEach((cell) => {
+      document.getElementById(cell).click();
+    });
+    // add previous generation
+    await state.historicGeneration[state.historicGeneration.length - 1].forEach(
+      (cell) => {
+        document.getElementById(cell).click();
+      }
+    );
+    dispatch(removeLastGeneration());
+    setNroGeneration((state) => state - 1);
+  };
+
+  const setOrganism = async (organism) => {
     if (state.cells.length > 0) {
-      restart();
+      await restart();
     }
     if (organism.length > 0) {
       patternsByName[organism].forEach((cell) => {
         document.getElementById(cell).click();
       });
-    }
-  }, [organism]);
-
-  const handleChangeGrid = (e) => {
-    if (e.target.id === "row") {
-      if (parseInt(e.target.value) > 30) {
-        document.getElementById("row").value = 30;
-        dispatch(setCellGrid([30, state.cellGrid[1]]));
-      } else {
-        dispatch(setCellGrid([parseInt(e.target.value), state.cellGrid[1]]));
-      }
-    } else {
-      if (parseInt(e.target.value) > 50) {
-        document.getElementById("column").value = 50;
-        dispatch(setCellGrid([state.cellGrid[0], 50]));
-      } else {
-        dispatch(setCellGrid([state.cellGrid[0], parseInt(e.target.value)]));
-      }
     }
   };
 
@@ -492,9 +498,63 @@ const Header = () => {
     return () => clearTimeout(myTimer.current);
   }, [nroGeneration, running, debouncedInterval]);
 
+  useEffect(() => {
+    props.setIsLoading(true);
+    if (grid) {
+      if (grid.target.id === "row") {
+        if (parseInt(grid.target.value) > 30) {
+          document.getElementById("row").value = 30;
+          dispatch(setCellGrid([30, state.cellGrid[1]]));
+        } else {
+          if (parseInt(grid.target.value) < 10) {
+            document.getElementById("row").value = 10;
+            dispatch(setCellGrid([10, state.cellGrid[1]]));
+          } else {
+            dispatch(
+              setCellGrid([parseInt(grid.target.value), state.cellGrid[1]])
+            );
+          }
+        }
+      } else {
+        if (parseInt(grid.target.value) > 50) {
+          document.getElementById("column").value = 50;
+          dispatch(setCellGrid([state.cellGrid[0], 50]));
+        } else {
+          if (parseInt(grid.target.value) < 20) {
+            document.getElementById("column").value = 20;
+            dispatch(setCellGrid([state.cellGrid[0], 20]));
+          } else {
+            dispatch(
+              setCellGrid([state.cellGrid[0], parseInt(grid.target.value)])
+            );
+          }
+        }
+      }
+    }
+  }, [debouncedGrid]);
+
   return (
     <div className="header">
       <Stack spacing={2} direction="row">
+        <IconButton
+          aria-label=""
+          id="previous"
+          color="primary"
+          component="span"
+          disabled={running || state.cells.length === 0 || nroGeneration === 0}
+          style={{
+            padding: "0px",
+            // marginTop: "5px",
+            // marginRight: "11px",
+          }}
+          onClick={handlePreviousGeneration}
+        >
+          <SkipPreviousRoundedIcon
+            style={{
+              fontSize: 40,
+            }}
+          />
+        </IconButton>
         <Button
           size="small"
           style={{ fontSize: 10 }}
@@ -522,6 +582,25 @@ const Header = () => {
         >
           Reiniciar
         </Button>
+        <IconButton
+          aria-label=""
+          id="next"
+          component="span"
+          color="primary"
+          disabled={running || state.cells.length === 0}
+          style={{
+            padding: "0px",
+            // marginTop: "5px",
+            // marginRight: "11px",
+          }}
+          onClick={handleNextGeneration}
+        >
+          <SkipNextRoundedIcon
+            style={{
+              fontSize: 40,
+            }}
+          />
+        </IconButton>
         <TextField
           size="small"
           label="Tiempo de intervalo"
@@ -533,6 +612,7 @@ const Header = () => {
             endAdornment: <InputAdornment position="end">ms</InputAdornment>,
           }}
         />
+
         <TextField
           size="small"
           label="Filas"
@@ -540,11 +620,8 @@ const Header = () => {
           id="row"
           defaultValue={state.cellGrid[0]}
           inputProps={{ min: 10, max: 30 }}
-          onChange={(e) => handleChangeGrid(e)}
+          onChange={(e) => setGrid(e)}
           sx={{ fontSize: 10, height: 30, width: 75 }}
-          // InputProps={{
-          //   endAdornment: <InputAdornment position="end">ms</InputAdornment>,
-          // }}
         />
         <TextField
           size="small"
@@ -553,11 +630,8 @@ const Header = () => {
           id="column"
           defaultValue={state.cellGrid[1]}
           inputProps={{ min: 20, max: 50 }}
-          onChange={(e) => handleChangeGrid(e)}
+          onChange={(e) => setGrid(e)}
           sx={{ fontSize: 10, height: 30, width: 78 }}
-          // InputProps={{
-          //   endAdornment: <InputAdornment position="end">ms</InputAdornment>,
-          // }}
         />
         <Autocomplete
           id="grouped-demo"
@@ -575,13 +649,15 @@ const Header = () => {
             option.name === (state.cellGrid[1] < 30 && "Penta-decathlon") ||
             option.name === (state.cellGrid[1] < 40 && "Gosper glider gun")
           }
-          groupBy={(option) => option.type}
-          getOptionLabel={(option) => option.name}
+          groupBy={(option) => option.type} //group by type
+          getOptionLabel={(option) => option.name} // show name's organism
           onChange={(e) => setOrganism(e.target.textContent)}
-          sx={{ width: 300 }}
+          sx={{ width: 170 }}
           renderInput={(params) => <TextField {...params} label="Organisms" />}
         />
-        <Typography className="generacion">
+        <Typography
+          className="generacion" //show number generation
+        >
           Generacion #{nroGeneration}
         </Typography>
       </Stack>
