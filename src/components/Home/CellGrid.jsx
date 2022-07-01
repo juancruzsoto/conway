@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import { Grid, IconButton } from "@mui/material";
 import "./css/cellGrid.css";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   addCell,
   addNeighbors,
@@ -10,9 +10,13 @@ import {
   removeCell,
   removeNeighbors,
 } from "../../store/cellSlice";
+import useDebounce from "../../utilities/useDebounce";
 
 const CellGrid = () => {
   const dispatch = useDispatch();
+  const state = useSelector((state) => state.cellsReducer);
+  const debouncedGrid = useDebounce(state.cellGrid, 400);
+  const [cellsInGridState, setCellsInGridState] = useState([]);
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -84,8 +88,6 @@ const CellGrid = () => {
     }
   };
 
-  console.log(dimensions.height, dimensions.height);
-
   const Circle = (props) => {
     const [state, setState] = useState(false);
 
@@ -96,7 +98,7 @@ const CellGrid = () => {
         component="span"
         style={{
           color: "black",
-          backgroundColor: state && "lightblue",
+          backgroundColor: state && "blue",
           padding: "0px",
           marginTop: "5px",
           marginRight: "11px",
@@ -120,8 +122,19 @@ const CellGrid = () => {
 
   const putAllRows = () => {
     let rows = [];
-    let h = 15;
-    let w = 20;
+    let h, w;
+    if (debouncedGrid[0] < 10) {
+      h = 10;
+      document.getElementById("row").value = 10;
+    } else {
+      h = debouncedGrid[0];
+    }
+    if (debouncedGrid[1] < 20) {
+      w = 20;
+      document.getElementById("column").value = 20;
+    } else {
+      w = debouncedGrid[1];
+    }
     for (let x = 0; x < h; x++) {
       let row = [];
       for (let i = 0; i < w; i++) {
@@ -136,9 +149,13 @@ const CellGrid = () => {
     return rows;
   };
 
+  // useEffect(() => {
+  //   window.addEventListener("resize", handleResize, false);
+  // }, []);
+
   useEffect(() => {
-    window.addEventListener("resize", handleResize, false);
-  }, []);
+    setCellsInGridState(putAllRows());
+  }, [debouncedGrid]);
 
   return (
     <div className="cellGrid">
@@ -148,11 +165,10 @@ const CellGrid = () => {
         justifyContent="flex-start"
         alignItems="center"
       >
-        {putAllRows()}
+        {cellsInGridState}
       </Grid>
     </div>
   );
 };
-
 
 export default CellGrid;

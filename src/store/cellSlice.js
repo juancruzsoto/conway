@@ -4,6 +4,7 @@ const initialState = {
   cells: [],
   neighbors: {},
   neighborsbycell: {},
+  cellGrid: [30, 50],
 };
 
 const cellsSlice = createSlice({
@@ -37,6 +38,9 @@ const cellsSlice = createSlice({
         state.neighbors = {};
       }
     },
+    setCellGrid: (state, action) => {
+      state.cellGrid = action.payload;
+    },
   },
 });
 
@@ -46,6 +50,7 @@ export const {
   addNeighbors,
   removeNeighbors,
   addNeighborsByCell,
+  setCellGrid,
 } = cellsSlice.actions;
 
 export default cellsSlice.reducer;
