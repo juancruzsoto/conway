@@ -7,7 +7,7 @@ import gameOfLife from "../../img/game-of-life.gif";
 
 const HomeView = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [welcome, setWelcome] = useState(true)
+  const [welcome, setWelcome] = useState(true);
 
   return (
     <div>
@@ -53,7 +53,7 @@ const HomeView = () => {
                   <Button
                     style={{ fontSize: 14, marginBottom: "10px" }}
                     variant="contained"
-                    onClick={() => setWelcome(state => !state)}
+                    onClick={() => setWelcome((state) => !state)}
                   >
                     Empezar
                   </Button>
@@ -69,7 +69,7 @@ const HomeView = () => {
         justifyContent="flex-start"
         alignItems="center"
       >
-        <Grid item xs={12} style={{ width: "100%", padding: "1.2rem" }}>
+        <Grid item xs={12} style={{ width: "100%", padding: "0.5rem" }}>
           <Header setIsLoading={setIsLoading} />
         </Grid>
         <Grid item xs={12}>

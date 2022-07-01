@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import { Grid, IconButton } from "@mui/material";
-import "./css/cellGrid.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addCell,
@@ -112,7 +111,7 @@ const CellGrid = (props) => {
         component="span"
         style={{
           color: "black",
-          backgroundColor: state && "lightblue",
+          backgroundColor: state && "#90caf9",
           padding: "0px",
           marginTop: "5px",
           marginRight: "11px",

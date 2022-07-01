@@ -18,7 +18,6 @@ import {
 import useDebounce from "../../utilities/useDebounce";
 import SkipPreviousRoundedIcon from "@mui/icons-material/SkipPreviousRounded";
 import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
-import "./css/header.css";
 
 const Header = (props) => {
   const state = useSelector((state) => state.cellsReducer);
@@ -555,7 +554,7 @@ const Header = (props) => {
           <IconButton
             aria-label=""
             id="previous"
-            color="primary"
+            className="buttons"
             component="span"
             disabled={
               running ||
@@ -576,6 +575,7 @@ const Header = (props) => {
             />
           </IconButton>
           <Button
+            className="buttons"
             size="small"
             style={{ fontSize: 10 }}
             variant="contained"
@@ -586,6 +586,7 @@ const Header = (props) => {
           </Button>
           <Button
             size="small"
+            className="buttons"
             style={{ fontSize: 10 }}
             variant="contained"
             onClick={startGen}
@@ -598,6 +599,7 @@ const Header = (props) => {
             style={{ fontSize: 10 }}
             variant="contained"
             onClick={restart}
+            className="buttons"
             disabled={running || state.cells.length === 0}
           >
             Reiniciar
@@ -605,8 +607,8 @@ const Header = (props) => {
           <IconButton
             aria-label=""
             id="next"
+            className="buttons"
             component="span"
-            color="primary"
             disabled={
               (running && nroGeneration > 0) || state.cells.length === 0
             }
