@@ -8,6 +8,8 @@ const initialState = {
   historicGeneration: [],
 };
 
+
+//redux implemented in order to make the state management easier
 const cellsSlice = createSlice({
   name: "cells",
   initialState,

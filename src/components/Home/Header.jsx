@@ -20,7 +20,9 @@ import SkipPreviousRoundedIcon from "@mui/icons-material/SkipPreviousRounded";
 import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
 
 const Header = (props) => {
-  const state = useSelector((state) => state.cellsReducer);
+  const state = useSelector((state) => state.cellsReducer); //state storage var
+
+  //organisms showed in Autocomplete component
   const organismPatterns = [
     {
       name: "Block",
@@ -235,6 +237,7 @@ const Header = (props) => {
       ],
     },
   ];
+  //organism group by name
   const patternsByName = {
     Block: ["3,8", "3,9", "4,9", "4,8"],
 
@@ -406,6 +409,8 @@ const Header = (props) => {
       "6,36",
     ],
   };
+
+  //hooks and vars used
   const myTimer = useRef(null);
   const dispatch = useDispatch();
   const [running, setRunning] = useState(false);
@@ -413,22 +418,24 @@ const Header = (props) => {
   const [grid, setGrid] = useState(null);
   const debouncedGrid = useDebounce(grid, 400);
   const [nroGeneration, setNroGeneration] = useState(0);
-  // const [organism, setOrganism] = useState("");
   const debouncedInterval = useDebounce(interval, 500);
 
+  //function
   function nextGeneration() {
     state.cells.forEach((c) => {
       if (!state.neighbors[c]) {
-        document.getElementById(c).click();
+        document.getElementById(c).click(); //delete single cells
       }
     });
     Object.keys(state.neighbors).forEach((nb) => {
       if (state.cells.includes(nb)) {
+        //cells with 2 or 3 neighbors don't die
         if (state.neighbors[nb] !== 2 && state.neighbors[nb] !== 3) {
           document.getElementById(nb).click();
         }
       } else {
         if (state.neighbors[nb] === 3) {
+          //a neighbors if it have 3 neighbors live
           document.getElementById(nb).click();
         }
       }
@@ -436,50 +443,52 @@ const Header = (props) => {
   }
 
   const handleNextGeneration = () => {
+    //this arrow function store the historical generations
     dispatch(setHistoricGeneration(state.cells));
     nextGeneration();
     setNroGeneration((state) => state + 1);
   };
 
   const handlePreviousGeneration = async () => {
+    //this come back to the last generation
     //remove current generation
     await state.cells.forEach((cell) => {
       document.getElementById(cell).click();
     });
-    // add previous generation
+    // generate previous generation
     await state.historicGeneration[state.historicGeneration.length - 1].forEach(
       (cell) => {
         document.getElementById(cell).click();
       }
     );
-    dispatch(removeLastGeneration());
+    dispatch(removeLastGeneration()); //remove last generation in the historical generations
     setNroGeneration((state) => state - 1);
   };
 
-  const setOrganism = async (organism) => {
+  const setOrganism = async (organism) => { //organism selected will be shown
     localStorage.setItem("Cells", JSON.stringify([]));
-    if (state.cells.length > 0) {
+    if (state.cells.length > 0) { //deleted previous organism
       await restart();
     }
     if (organism.length > 0) {
-      patternsByName[organism].forEach((cell) => {
+      patternsByName[organism].forEach((cell) => { //generate new organism
         document.getElementById(cell).click();
       });
     }
   };
 
   const startGen = () => {
-    setRunning((state) => !state);
+    setRunning((state) => !state); //It indicates if the game is running or not
   };
 
-  const restart = () => {
+  const restart = () => { //delete current organism and set nroGeneration to 0
     setNroGeneration(0);
     state.cells.forEach((c) => {
       document.getElementById(c).click();
     });
   };
 
-  useEffect(() => {
+  useEffect(() => { //grid update in the interval indicated
     function startGeneration() {
       myTimer.current = setTimeout(() => {
         nextGeneration();
@@ -490,7 +499,7 @@ const Header = (props) => {
     if (running && state.cells.length > 0) {
       startGeneration();
     } else {
-      if (running && state.cells.length === 0) {
+      if (running && state.cells.length === 0) { 
         startGen();
         setNroGeneration(0);
       }
@@ -500,11 +509,11 @@ const Header = (props) => {
     // eslint-disable-next-line
   }, [nroGeneration, running, debouncedInterval]);
 
-  useEffect(() => {
+  useEffect(() => { //update the grid values if it changes size
     props.setIsLoading(true);
     if (grid) {
       if (grid.target.id === "row") {
-        if (parseInt(grid.target.value) > 30) {
+        if (parseInt(grid.target.value) > 30) { //validate values for rows
           document.getElementById("row").value = 30;
           dispatch(setCellGrid([30, state.cellGrid[1]]));
         } else {
@@ -518,7 +527,7 @@ const Header = (props) => {
           }
         }
       } else {
-        if (parseInt(grid.target.value) > 50) {
+        if (parseInt(grid.target.value) > 50) { //validate values for columns
           document.getElementById("column").value = 50;
           dispatch(setCellGrid([state.cellGrid[0], 50]));
         } else {
@@ -537,7 +546,7 @@ const Header = (props) => {
   }, [debouncedGrid]);
 
   return (
-    <Grid
+    <Grid  //buttons and selects of header
       container
       spacing={3}
       direction="row"
@@ -554,7 +563,7 @@ const Header = (props) => {
           <IconButton
             aria-label=""
             id="previous"
-            className="buttons"
+            color="primary"
             component="span"
             disabled={
               running ||
@@ -575,7 +584,6 @@ const Header = (props) => {
             />
           </IconButton>
           <Button
-            className="buttons"
             size="small"
             style={{ fontSize: 10 }}
             variant="contained"
@@ -586,7 +594,6 @@ const Header = (props) => {
           </Button>
           <Button
             size="small"
-            className="buttons"
             style={{ fontSize: 10 }}
             variant="contained"
             onClick={startGen}
@@ -599,7 +606,6 @@ const Header = (props) => {
             style={{ fontSize: 10 }}
             variant="contained"
             onClick={restart}
-            className="buttons"
             disabled={running || state.cells.length === 0}
           >
             Reiniciar
@@ -607,8 +613,8 @@ const Header = (props) => {
           <IconButton
             aria-label=""
             id="next"
-            className="buttons"
             component="span"
+            color="primary"
             disabled={
               (running && nroGeneration > 0) || state.cells.length === 0
             }
@@ -701,7 +707,7 @@ const Header = (props) => {
             )}
           />
           <Typography
-            className="generacion" //show number generation
+            style={{ color: "red" }} //show number generation
           >
             Generacion #{nroGeneration}
           </Typography>

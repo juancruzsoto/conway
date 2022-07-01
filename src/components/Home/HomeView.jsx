@@ -6,20 +6,19 @@ import Header from "./Header";
 import gameOfLife from "../../img/game-of-life.gif";
 
 const HomeView = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [welcome, setWelcome] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); //state to show a Loading page
+  const [welcome, setWelcome] = useState(true); //state to init welcome
 
   return (
     <div>
       <Backdrop style={{ zIndex: "10", color: "#fff" }} open={welcome}>
         <Grid container justifyContent="center" alignItems="center" spacing={3}>
-          <Grid
+          <Grid  //welcome view
             item
             xs={11}
             sm={10}
             md={8}
             lg={6}
-            // lg={6}
             style={{ width: "100%", height: "100%" }}
           >
             <Paper elevation={3} style={{ opacity: "95%" }}>
@@ -63,7 +62,7 @@ const HomeView = () => {
           </Grid>
         </Grid>
       </Backdrop>
-      <Grid
+      <Grid  //Header and Grid group by column
         container
         direction="column"
         justifyContent="flex-start"
@@ -76,7 +75,7 @@ const HomeView = () => {
           <CellGrid setIsLoading={setIsLoading} isLoading={isLoading} />
         </Grid>
       </Grid>
-      <Loading open={isLoading} />
+      <Loading open={isLoading} /> 
     </div>
   );
 };

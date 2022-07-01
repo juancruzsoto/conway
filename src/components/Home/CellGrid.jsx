@@ -12,6 +12,7 @@ import {
 import useDebounce from "../../utilities/useDebounce";
 
 const CellGrid = (props) => {
+  //hooks and vars used
   const dispatch = useDispatch();
   const state = useSelector((state) => state.cellsReducer);
   const debouncedGrid = useDebounce(state.cellGrid, 400);
@@ -22,7 +23,7 @@ const CellGrid = (props) => {
   });
   const debouncedDimensions = useDebounce(dimensions, 300);
 
-  const handleResize = () => {
+  const handleResize = () => { //update width and height of the screen
     props.setIsLoading(true);
     setDimensions({
       width: window.innerWidth,
@@ -30,8 +31,8 @@ const CellGrid = (props) => {
     });
   };
 
-  const setNeighbors = (x, i, h, w) => {
-    let neighbors = [];
+  const setNeighbors = (x, i, h, w) => { //calculate all neighbors of the cell according to their position
+    let neighbors = []; 
     let row;
     let row2;
 
@@ -64,30 +65,24 @@ const CellGrid = (props) => {
         }
       }
     }
-    neighbors.splice(4, 1);
-    // neighbors.push(`${x},${i - 1}`);
-    // neighbors.push(`${x},${i + 1}`);
-    // for (let column = i - 1; column < i + 2; column++) {
-    //   neighbors.push(`${x + 1},${column}`);
-    // }
+    neighbors.splice(4, 1); //the cell is not included in its neighbors then it will be delete
 
     return neighbors;
   };
 
-  const handleChangeState = (x, i, state, setState, h, w) => {
-    // document.getElementById(`${0},${0}`).click();
+  const handleChangeState = (x, i, state, setState, h, w) => { //for each cell is added in the grid 
     setState((currentState) => !currentState);
 
-    let neighbors = setNeighbors(x, i, h, w);
+    let neighbors = setNeighbors(x, i, h, w); //calculate all neighbors of the cell according to their position
     let cellsLocalStorage = JSON.parse(localStorage.getItem("Cells"));
 
-    if (state) {
+    if (state) { //delete cell and its neighbors from state
       dispatch(removeCell(`${x},${i}`));
       dispatch(removeNeighbors(neighbors));
       cellsLocalStorage = cellsLocalStorage.filter((b) => b !== `${x},${i}`);
       localStorage.setItem("Cells", JSON.stringify(cellsLocalStorage));
-    } else {
-      dispatch(addCell(`${x},${i}`));
+    } else {  //add cell and its neighbors from state
+      dispatch(addCell(`${x},${i}`)); 
       dispatch(addNeighborsByCell({ cell: `${x},${i}`, neighbors: neighbors }));
       dispatch(addNeighbors(neighbors));
       if (cellsLocalStorage) {
@@ -101,7 +96,7 @@ const CellGrid = (props) => {
     }
   };
 
-  const Circle = (props) => {
+  const Circle = (props) => { //component for each cell
     const [state, setState] = useState(false);
 
     return (
@@ -111,18 +106,18 @@ const CellGrid = (props) => {
         component="span"
         style={{
           color: "black",
-          backgroundColor: state && "#90caf9",
+          backgroundColor: state && "#90caf9", //if it is clicked change its color
           padding: "0px",
           marginTop: "5px",
           marginRight: "11px",
         }}
         onClick={() =>
-          handleChangeState(props.x, props.i, state, setState, props.h, props.w)
+          handleChangeState(props.x, props.i, state, setState, props.h, props.w) //add each cell in the grid 
         }
       >
         <CircleOutlinedIcon
           style={{
-            fontSize:
+            fontSize: //cell size calculated based on screen size
               (dimensions.height - (props.h * 5 + 100)) / props.h >
               (dimensions.width - (props.w * 11 + 40)) / props.w
                 ? (dimensions.width - (props.w * 11 + 40)) / props.w
@@ -138,9 +133,9 @@ const CellGrid = (props) => {
     let h = debouncedGrid[0];
     let w = debouncedGrid[1];
 
-    for (let x = 0; x < h; x++) {
+    for (let x = 0; x < h; x++) { //number of cells in the row
       let row = [];
-      for (let i = 0; i < w; i++) {
+      for (let i = 0; i < w; i++) {  //number of cells in the column
         row.push(<Circle h={h} w={w} x={x} i={i} />);
       }
       rows.push(
@@ -153,11 +148,11 @@ const CellGrid = (props) => {
   };
 
   useEffect(() => {
-    window.addEventListener("resize", handleResize, false);
+    window.addEventListener("resize", handleResize, false); // useEffect for screen changes
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
+  useEffect(() => {  //update grid if it changes size
     let cellsLocalStorage = JSON.parse(localStorage.getItem("Cells"));
     async function setCellsInGrid() {
       await setCellsInGridState(putAllRows());
