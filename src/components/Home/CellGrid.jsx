@@ -80,13 +80,25 @@ const CellGrid = (props) => {
     setState((currentState) => !currentState);
 
     let neighbors = setNeighbors(x, i, h, w);
+    let cellsLocalStorage = JSON.parse(localStorage.getItem("Cells"));
+
     if (state) {
       dispatch(removeCell(`${x},${i}`));
       dispatch(removeNeighbors(neighbors));
+      cellsLocalStorage = cellsLocalStorage.filter((b) => b !== `${x},${i}`);
+      localStorage.setItem("Cells", JSON.stringify(cellsLocalStorage));
     } else {
       dispatch(addCell(`${x},${i}`));
       dispatch(addNeighborsByCell({ cell: `${x},${i}`, neighbors: neighbors }));
       dispatch(addNeighbors(neighbors));
+      if (cellsLocalStorage) {
+        localStorage.setItem(
+          "Cells",
+          JSON.stringify(cellsLocalStorage.concat(`${x},${i}`))
+        );
+      } else {
+        localStorage.setItem("Cells", JSON.stringify([`${x},${i}`]));
+      }
     }
   };
 
@@ -143,11 +155,32 @@ const CellGrid = (props) => {
 
   useEffect(() => {
     window.addEventListener("resize", handleResize, false);
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
-    setCellsInGridState(putAllRows());
+    let cellsLocalStorage = JSON.parse(localStorage.getItem("Cells"));
+    async function setCellsInGrid() {
+      await setCellsInGridState(putAllRows());
+      if (cellsLocalStorage) {
+        await cellsLocalStorage.forEach((cell) => {
+          dispatch(removeCell(cell));
+        });
+      }
+    }
+    localStorage.setItem("Cells", JSON.stringify([]));
+    setCellsInGrid().then(() => {
+      if (cellsLocalStorage) {
+        if (document.getElementById("0,0")) {
+          cellsLocalStorage.forEach((cell) => {
+            document.getElementById(cell).click();
+          });
+        } else {
+        }
+      }
+    });
     props.setIsLoading(false);
+    // eslint-disable-next-line
   }, [debouncedGrid, debouncedDimensions]);
 
   return (

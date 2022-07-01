@@ -15,11 +15,11 @@ const HomeView = () => {
         justifyContent="flex-start"
         alignItems="center"
       >
-        <Grid item xs={12}>
+        <Grid item xs={12} style={{width:"100%",padding:"1.2rem"}}>
           <Header setIsLoading={setIsLoading} />
         </Grid>
         <Grid item xs={12}>
-          <CellGrid setIsLoading={setIsLoading} />
+          <CellGrid setIsLoading={setIsLoading} isLoading={isLoading}/>
         </Grid>
       </Grid>
       <Loading open={isLoading} />

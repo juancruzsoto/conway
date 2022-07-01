@@ -6,6 +6,7 @@ import {
   InputAdornment,
   Autocomplete,
   IconButton,
+  Grid,
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -457,6 +458,7 @@ const Header = (props) => {
   };
 
   const setOrganism = async (organism) => {
+    localStorage.setItem("Cells", JSON.stringify([]));
     if (state.cells.length > 0) {
       await restart();
     }
@@ -496,6 +498,7 @@ const Header = (props) => {
     }
 
     return () => clearTimeout(myTimer.current);
+    // eslint-disable-next-line
   }, [nroGeneration, running, debouncedInterval]);
 
   useEffect(() => {
@@ -531,137 +534,178 @@ const Header = (props) => {
         }
       }
     }
+    // eslint-disable-next-line
   }, [debouncedGrid]);
 
   return (
-    <div className="header">
-      <Stack spacing={2} direction="row">
-        <IconButton
-          aria-label=""
-          id="previous"
-          color="primary"
-          component="span"
-          disabled={running || state.cells.length === 0 || nroGeneration === 0}
-          style={{
-            padding: "0px",
-            // marginTop: "5px",
-            // marginRight: "11px",
-          }}
-          onClick={handlePreviousGeneration}
+    <Grid
+      container
+      spacing={3}
+      direction="row"
+      justifyContent="flex-end"
+      alignItems="center"
+    >
+      <Grid item xs={12} md={6} lg={4}>
+        <Stack
+          direction="row"
+          justifyContent="flex-start"
+          alignItems="center"
+          spacing={2}
         >
-          <SkipPreviousRoundedIcon
+          <IconButton
+            aria-label=""
+            id="previous"
+            color="primary"
+            component="span"
+            disabled={
+              running ||
+              state.historicGeneration.length === 0 ||
+              nroGeneration === 0
+            }
             style={{
-              fontSize: 40,
+              padding: "0px",
+              // marginTop: "5px",
+              // marginRight: "11px",
+            }}
+            onClick={handlePreviousGeneration}
+          >
+            <SkipPreviousRoundedIcon
+              style={{
+                fontSize: 40,
+              }}
+            />
+          </IconButton>
+          <Button
+            size="small"
+            style={{ fontSize: 10 }}
+            variant="contained"
+            onClick={startGen}
+            disabled={running || state.cells.length === 0}
+          >
+            Iniciar
+          </Button>
+          <Button
+            size="small"
+            style={{ fontSize: 10 }}
+            variant="contained"
+            onClick={startGen}
+            disabled={!running}
+          >
+            Detener
+          </Button>
+          <Button
+            size="small"
+            style={{ fontSize: 10 }}
+            variant="contained"
+            onClick={restart}
+            disabled={running || state.cells.length === 0}
+          >
+            Reiniciar
+          </Button>
+          <IconButton
+            aria-label=""
+            id="next"
+            component="span"
+            color="primary"
+            disabled={
+              (running && nroGeneration > 0) || state.cells.length === 0
+            }
+            style={{
+              padding: "0px",
+              // marginTop: "5px",
+              // marginRight: "11px",
+            }}
+            onClick={handleNextGeneration}
+          >
+            <SkipNextRoundedIcon
+              style={{
+                fontSize: 40,
+              }}
+            />
+          </IconButton>
+        </Stack>
+      </Grid>
+      <Grid item xs={12} md={6} lg={4}>
+        <Stack
+          direction="row"
+          justifyContent="flex-start"
+          alignItems="center"
+          spacing={2}
+        >
+          <TextField
+            size="small"
+            label="Tiempo de intervalo"
+            type="number"
+            id="outlined-start-adornment"
+            defaultValue={interval}
+            onChange={(e) => setInterval(e.target.value)}
+            sx={{ fontSize: 10, height: 30, width: 200 }}
+            InputProps={{
+              endAdornment: <InputAdornment position="end">ms</InputAdornment>,
             }}
           />
-        </IconButton>
-        <Button
-          size="small"
-          style={{ fontSize: 10 }}
-          variant="contained"
-          onClick={startGen}
-          disabled={running || state.cells.length === 0}
-        >
-          Iniciar
-        </Button>
-        <Button
-          size="small"
-          style={{ fontSize: 10 }}
-          variant="contained"
-          onClick={startGen}
-          disabled={!running}
-        >
-          Detener
-        </Button>
-        <Button
-          size="small"
-          style={{ fontSize: 10 }}
-          variant="contained"
-          onClick={restart}
-          disabled={running || state.cells.length === 0}
-        >
-          Reiniciar
-        </Button>
-        <IconButton
-          aria-label=""
-          id="next"
-          component="span"
-          color="primary"
-          disabled={running || state.cells.length === 0}
-          style={{
-            padding: "0px",
-            // marginTop: "5px",
-            // marginRight: "11px",
-          }}
-          onClick={handleNextGeneration}
-        >
-          <SkipNextRoundedIcon
-            style={{
-              fontSize: 40,
-            }}
-          />
-        </IconButton>
-        <TextField
-          size="small"
-          label="Tiempo de intervalo"
-          id="outlined-start-adornment"
-          defaultValue={interval}
-          onChange={(e) => setInterval(e.target.value)}
-          sx={{ fontSize: 10, height: 30, width: 200 }}
-          InputProps={{
-            endAdornment: <InputAdornment position="end">ms</InputAdornment>,
-          }}
-        />
 
-        <TextField
-          size="small"
-          label="Filas"
-          type="number"
-          id="row"
-          defaultValue={state.cellGrid[0]}
-          inputProps={{ min: 10, max: 30 }}
-          onChange={(e) => setGrid(e)}
-          sx={{ fontSize: 10, height: 30, width: 75 }}
-        />
-        <TextField
-          size="small"
-          label="Columnas"
-          type="number"
-          id="column"
-          defaultValue={state.cellGrid[1]}
-          inputProps={{ min: 20, max: 50 }}
-          onChange={(e) => setGrid(e)}
-          sx={{ fontSize: 10, height: 30, width: 78 }}
-        />
-        <Autocomplete
-          id="grouped-demo"
-          size={"small"}
-          options={organismPatterns.sort(
-            (a, b) => -b.type.localeCompare(a.type)
-          )}
-          getOptionDisabled={(
-            option //remove from list by grid size
-          ) =>
-            option.name === (state.cellGrid[0] < 20 && "Pulsar") ||
-            option.name === (state.cellGrid[0] < 20 && "Penta-decathlon") ||
-            option.name === (state.cellGrid[0] < 20 && "Gosper glider gun") ||
-            option.name === (state.cellGrid[1] < 30 && "Pulsar") ||
-            option.name === (state.cellGrid[1] < 30 && "Penta-decathlon") ||
-            option.name === (state.cellGrid[1] < 40 && "Gosper glider gun")
-          }
-          groupBy={(option) => option.type} //group by type
-          getOptionLabel={(option) => option.name} // show name's organism
-          onChange={(e) => setOrganism(e.target.textContent)}
-          sx={{ width: 170 }}
-          renderInput={(params) => <TextField {...params} label="Organisms" />}
-        />
-        <Typography
-          className="generacion" //show number generation
+          <TextField
+            size="small"
+            label="Filas"
+            type="number"
+            id="row"
+            defaultValue={state.cellGrid[0]}
+            inputProps={{ min: 10, max: 30 }}
+            onChange={(e) => setGrid(e)}
+            sx={{ fontSize: 10, height: 30, width: 75 }}
+          />
+          <TextField
+            size="small"
+            label="Columnas"
+            type="number"
+            id="column"
+            defaultValue={state.cellGrid[1]}
+            inputProps={{ min: 20, max: 50 }}
+            onChange={(e) => setGrid(e)}
+            sx={{ fontSize: 10, height: 30, width: 78 }}
+          />
+        </Stack>
+      </Grid>
+      <Grid item xs={12} md={6} lg={4}>
+        <Stack
+          direction="row"
+          justifyContent="flex-start"
+          alignItems="center"
+          spacing={2}
         >
-          Generacion #{nroGeneration}
-        </Typography>
-      </Stack>
-    </div>
+          <Autocomplete
+            id="grouped-demo"
+            size={"small"}
+            options={organismPatterns.sort(
+              (a, b) => -b.type.localeCompare(a.type)
+            )}
+            getOptionDisabled={(
+              option //remove from list by grid size
+            ) =>
+              option.name === (state.cellGrid[0] < 20 && "Pulsar") ||
+              option.name === (state.cellGrid[0] < 20 && "Penta-decathlon") ||
+              option.name === (state.cellGrid[0] < 20 && "Gosper glider gun") ||
+              option.name === (state.cellGrid[1] < 30 && "Pulsar") ||
+              option.name === (state.cellGrid[1] < 30 && "Penta-decathlon") ||
+              option.name === (state.cellGrid[1] < 40 && "Gosper glider gun")
+            }
+            groupBy={(option) => option.type} //group by type
+            getOptionLabel={(option) => option.name} // show name's organism
+            onChange={(e) => setOrganism(e.target.textContent)}
+            sx={{ width: 170 }}
+            renderInput={(params) => (
+              <TextField {...params} label="Organisms" />
+            )}
+          />
+          <Typography
+            className="generacion" //show number generation
+          >
+            Generacion #{nroGeneration}
+          </Typography>
+        </Stack>
+      </Grid>
+    </Grid>
   );
 };
 
